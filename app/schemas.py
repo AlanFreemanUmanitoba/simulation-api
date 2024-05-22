@@ -16,6 +16,7 @@ class CloneMessage(BaseModel):
 class UserBase(BaseModel):
     username: str
     current_simulation_id: int
+    is_locked: bool
     api_key:str
     
 class SimulationBase(BaseModel):

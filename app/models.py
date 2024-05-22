@@ -77,6 +77,7 @@ class User(Base):
     password =  Column(String)
     current_simulation_id = Column(Integer, nullable=False, default=0)
     api_key = Column (String)
+    is_locked = Column(String)
 
     def current_simulation(self,session:Session)->Simulation:
         """Return this user's current simulation.
