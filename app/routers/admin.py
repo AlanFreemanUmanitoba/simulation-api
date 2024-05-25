@@ -1,6 +1,7 @@
 """Endpoints for the administrator.
 
 """
+import pprint
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, Security,status
 from ..reporting.caplog import logger
@@ -69,22 +70,23 @@ def lock_user(
     """Lock a username to restrict access to it to one player.
 
       {username} is the name of the user to lock.  
-      If there is no such user, send a failure (status code 400?).   
-      (TODO Only guest can request a lock. If another user, send a failure).  
-      If user is not locked, generate and send an apikey (status code 200)  [NB IS THIS NEEDED?].  
-      If user is locked, send a refusal (status code 400).  
+      If there is no such user, respond with status code 400.   
+      If user is not locked, generate and send an apikey with status code 200  [NB IS THIS NEEDED?].  
+      If user is locked, respond with status code 409).  
     """
     logger.info(f"request to lock user called {username}")
     # Find out if the user exists.  
-    user = session.query(User).where(User.username==username).first()
+    user:User = session.query(User).where(User.username==username).first()
+    print(f"User details follow:\n")
+    print(vars(user))
     if user is None:
         raise HTTPException(status_code=400, detail='Request to lock non-existent user')
     if user.is_locked:
-        raise HTTPException(status_code=400, detail='Request to lock user who is already locked')
+        raise HTTPException(status_code=409, detail='Request to lock user who is already locked')
     session.add(user)
     user.is_locked=True
     session.commit()
-    return {'message': f'User {username} was locked',"statusCode":status.HTTP_200_OK}
+    return {'message': f'User {username} has now been locked',"statusCode":status.HTTP_200_OK}
         
 
 @router.get("/unlock/{username}",response_model=ServerMessage)
